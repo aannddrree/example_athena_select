@@ -1,0 +1,25 @@
+import org.apache.iceberg.{DataFile, Snapshot}
+import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.spark.SparkCatalog
+
+import java.time.{Instant, Duration}
+
+val catalog = new SparkCatalog(spark.sessionState.conf)
+val tableIdentifier = TableIdentifier.of("database", "table")
+val table = catalog.loadTable(tableIdentifier)
+
+val currentTimestamp = Instant.now()
+val thresholdTimestamp = currentTimestamp.minus(Duration.ofHours(24))
+
+val snapshot: Snapshot = table.currentSnapshot()
+
+val orphanFiles: Seq[DataFile] = snapshot.dataManifest().deleteManifests()
+  .flatMap(_.deleteDataFiles())
+  .filter(file => file.timestampMillis() < thresholdTimestamp.toEpochMilli)
+
+orphanFiles.foreach { file =>
+  // Perform the necessary action to remove the orphan file
+  // For example:
+  // file.delete()
+  println(s"Removed orphan file: ${file.path()}")
+}
