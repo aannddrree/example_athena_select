@@ -1,0 +1,10 @@
+aws glue update-table \
+  --database-name YourDatabaseName \
+  --table-input '{
+    "name": "YourTableName",
+    "storageDescriptor": {
+      "location": "s3://new-metadata-location/"
+      // Other storageDescriptor properties can remain the same or be adjusted as needed
+    }
+    // Other table properties can remain the same or be adjusted as needed
+  }'
